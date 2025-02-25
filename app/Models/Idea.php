@@ -17,4 +17,12 @@ class Idea extends Model
     public function comments() {
         return $this->hasMany('App\Models\Comment');
     }
+    public function likes()
+    {
+        return $this->hasMany(Like::class);
+    }
+    public function isLikedByUser($userId)
+    {
+        return $this->likes()->where('user_id', $userId)->exists();
+    }
 }

@@ -32,15 +32,22 @@ class Idea extends Controller
         $idea->save();
         return redirect("/")->with("success", "Your idea has been saved successfully!");
     }
-    public function delete($id) {
+    public function delete($id)
+    {
         $idea = ModelsIdea::find($id);
-    
-        if ($idea) {
-            $idea->delete();
-            return redirect("/")->with("success", "The idea has been deleted successfully!");
+
+        if (!$idea) {
+            return redirect("/")->with("fail", "The idea does not exist or has already been deleted!");
         }
-    
-        return redirect("/")->with("fail", "The idea does not exist or has already been deleted!");
+        if ($idea->user_id !== Auth::id()) {
+            return redirect("/")->with("fail", "You are not authorized to delete this idea!");
+        }
+        $idea->comments()->delete();
+        $idea->likes()->delete();
+
+        $idea->delete();
+
+        return redirect("/")->with("success", "The idea has been deleted successfully!");
     }
     public function show($id) {
         return view("ideas.show", ["idea" => ModelsIdea::find($id)]);
@@ -54,11 +61,17 @@ class Idea extends Controller
         $validated = $request->validate([
             'content' => 'required|string|min:2|max:255',
         ]);
+    
         $idea = ModelsIdea::find($id);
         if (!$idea) {
             Log::warning("Idea ID $id not found for update.");
             return redirect('/')->with('fail', 'The idea does not exist.');
         }
+    
+        if ($idea->user_id !== Auth::id()) {
+            return redirect('/')->with('fail', 'You are not authorized to update this idea!');
+        }
+    
         $idea->content = $validated['content'];
         $idea->save();
         return redirect('/')->with('success', 'The idea has been updated successfully!');

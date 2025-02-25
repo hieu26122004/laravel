@@ -7,8 +7,8 @@
                 <img
                     style="width: 50px"
                     class="me-2 avatar-sm rounded-circle"
-                    src="https://api.dicebear.com/6.x/fun-emoji/svg?seed=Mario"
-                    alt="Mario Avatar"
+                    src="https://api.dicebear.com/6.x/fun-emoji/svg?seed={{ $idea->user->name }}"
+                    alt="{{ $idea->user->name }} Avatar"
                 />
                 <div>
                     <h5 class="card-title mb-0">
@@ -97,10 +97,30 @@
         <!-- Additional Info -->
         <div class="d-flex justify-content-between">
             <div>
-                <a href="#" class="fw-light nav-link fs-6">
+                <!-- Nút Like/Unlike -->
+                @auth
+                <form
+                    method="POST"
+                    action="{{ url('/idea/' . $idea->id . '/like') }}"
+                    style="display: inline-block"
+                >
+                    @csrf
+                    <button
+                        type="submit"
+                        class="fw-light nav-link fs-6 border-0 bg-transparent p-0"
+                    >
+                        <span
+                            class="fas fa-heart me-1 {{ $idea->isLikedByUser(auth()->id()) ? 'text-danger' : '' }}"
+                        ></span>
+                        {{ $idea->likes }}
+                    </button>
+                </form>
+                @else
+                <span class="fw-light nav-link fs-6">
                     <span class="fas fa-heart me-1"></span>
                     {{ $idea->likes }}
-                </a>
+                </span>
+                @endauth
             </div>
             <div>
                 <span class="fs-6 fw-light text-muted">
@@ -110,7 +130,6 @@
             </div>
         </div>
 
-        <!-- Comments Section -->
         @include("shared.comment_box")
     </div>
 </div>
